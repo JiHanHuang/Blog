@@ -28,6 +28,11 @@
       <div id="lv-container" data-id="city" data-uid="{{ theme.livere_uid }}"></div>
     {% elseif theme.changyan.appid and theme.changyan.appkey %}
       <div id="SOHUCS"></div>
+	{% elseif theme.valine.appid and theme.valine.appkey %}
+		<div>
+		</div>
     {% endif %}
   </div>
+ 
+
 {% endif %}

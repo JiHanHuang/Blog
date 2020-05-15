@@ -96,8 +96,8 @@ live2d:
   #选择哪种模型
   model:
     #use: live2d-widget-model-tororo  #白猫
-    use: live2d-widget-model-hijiki #黑猫
-    #use: live2d-widget-model-koharu #妹子
+    #use: live2d-widget-model-hijiki #黑猫
+    use: live2d-widget-model-koharu #妹子
   display: #放置位置和大小
     position: right
     width: 150

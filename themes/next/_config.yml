@@ -335,7 +335,7 @@ han: false
 # Disqus
 disqus:
   enable: false
-  shortname:
+  shortname: JiHan
   count: true
 
 # Hypercomments
@@ -688,6 +688,26 @@ images: images
 # themes\next\layout\_macro\passage-end-tag.swig
 passage_end_tag:
   enabled: true
+
+# Valine.
+# You can get your appid and appkey from https://leancloud.cn
+# more info please open https://valine.js.org
+valine:
+  enable: true
+  appid: VgnMRYmQLHYX1MQApA7bN511-gzGzoHsz
+  appkey: A37Y5jPoqc8cxMaOoNiXSh9s
+  # 新留言是否需要通知 https://github.com/xCss/Valine/wiki
+  notify: false
+  # 是否需要验证，验证比较反人类建议false关闭
+  verify: false
+  # 默认留言框内的文字
+  placeholder: 小伙子，我看你骨骼惊奇...
+  # 默认头像
+  avatar: mp 
+  # 默认留言框的头部需要访问者输入的信息
+  guest_info: nick,mail
+  # pagination size #默认单页的留言条数
+  pageSize: 10 
 
 
 # Theme version
