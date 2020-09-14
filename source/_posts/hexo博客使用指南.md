@@ -23,7 +23,7 @@ tags: 工具
 
 ### 已有博客，环境迁移
 主要是相应环境安装：
-1. node.js 官方下载
+1. node.js [官方下载](https://nodejs.org/zh-cn/download/releases/), 我这里选择的是12.x的版本。
    windows直接点安装
    Linux下载解压后，配置路径`export PATH=$PATH:xxxx/node-v14.10.0-linux-x64/bin`
 2. git安装
@@ -32,7 +32,7 @@ tags: 工具
 3. 安装hexo
    ```
    npm i hexo-cli -g
-   
+
     #配置git扩展，在你自己的博客里肯定已经配置了项目地址关联
    npm i hexo-deployer-git
    ```
