@@ -1,7 +1,8 @@
 ---
 title: ipset消息通信
 date: 2020-05-18 15:45:31
-tags:
+categories: 技术杂谈
+tags: [IPSET]
 ---
 
 这里列出了一些ipset消息通信的格式，并且附加了ipset命令的debug版本。(•̀⌄•́)
