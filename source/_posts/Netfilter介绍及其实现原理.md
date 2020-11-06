@@ -10,7 +10,7 @@ tags: [NETFILTER]
 　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　——　by JiHan
 * * *
 
-*ipset部分conntrack部分还有坑没填*
+*源码的版本：linux-3.10.0-1127.18.2.el7 (centos)*
 
 <!-- more -->
 
@@ -67,6 +67,7 @@ iptables [-t table] command [match] [target]
 |-N --new-chain <name>|创建一个新的用户定义链。|
 |-v --verbose|与list选项一起使用时提供更多信息。|
 |-X --delete-chain <name>|删除用户定义的链。|
+
 #### 示例
 ```
 // 删除规则
@@ -875,7 +876,7 @@ make CONFIG_NETFILTER_XT_MATCH_TEST=m -C <your_kernel_src_path>  M=`pwd` modules
 
 
 ## 链接跟踪(conntrack)
-功能就是给链接做标识。
+功能就是给链接做标识。这一章节主要都是参考(也就是抄[狗头])Netfilter[链接跟踪简介](http://blog.chinaunix.net/uid-26517122-id-4281274.html)(想看更详细内容最好看原文，我这里只是简单截取了主要核心部分，就不重复copy了)，他其他的netfilter相关的解析也写的挺好，建议去看看。
 #### conntrack介绍
  我们期望一种场景，即外网无法访问内网，但是内网能够访问外网。但配置了拒绝所有外网来的数据包以后，内网访问外网返回的包也无法进入内网，导致内网访问外网失败。因此我们可以利用conntrack(链接跟踪)来解决这一问题。
 通用的数据访问方式分两种：
@@ -907,17 +908,222 @@ iptables -A INPUT -m conntrack --ctstatus EXPECTED -j ACCEPT//放行期望连接
 3. 根据报文进行连接状态的建立及对已有连接状态的更新
 4. 期望连接的建立和关联
 5. 在连接跟踪上需要提供易于扩展的接口，来实现用户自定义的一些功能。
+下面本文将从两个方向来描述链接跟踪，一是从模块扩展上，模块如何注册到conntrack中，提供报文的处理方法；第二是数据流上，报文时如何一步步的在netfilter框架中流动，被conntrack处理的。
+
+### conntrack标识
+连接跟踪是根据报文的L3，L4层头信息来标识一条连接的，而这些标识需要一个数据结构来进行定义和存储。改数据结构包含了一条连接的全部信息，并且链接跟踪的查找，建立，关联和更新都是依据该数据结构，我们称该数据结构为元组。
+**元组数据结构：**
+```c
+struct nf_conntrack_tuple
+{
+     struct nf_conntrack_man src;  //源端信息
+
+   //目的端信息。
+    /* These are the parts of the tuple which are fixed. */
+    struct {
+        union nf_inet_addr u3;  //目的IP地址
+　　  //目的端口的信息，不同协议使用不同的报文字段
+        union {
+             /* Add other protocols here. */
+            __be16 all;
+            struct {
+                __be16 port;//TCP报文就使用目的端口
+            } tcp;
+            struct {
+                 __be16 port;//UDP报文就使用目的端口
+            } udp;
+            struct {
+                u_int8_t type, code;//ICMPP报文使用type，cod两个字段
+            } icmp;
+            ... //其他协议此处省略
+        } u;
+        //传输层协议类型，既L4协议类型
+        u_int8_t protonum;
+        //标识连接的方向，一条连接分两个方向，一来一回
+        /* The direction (for tuplehash) */
+        u_int8_t dir;
+    } dst;
+};
 
 
-#### conntrack的标识
-#### 链接跟踪控制方式
+struct nf_conntrack_man
+{
+     union nf_inet_addr u3; //IP地址
+    //L4协议源端信息
+    union nf_conntrack_man_proto u;
+    //L3协议类型
+    u_int16_t l3num;
+};
 
-## iptables和ipset
-### ipset简介
-### ipset原理
-### ipset用户控制
-### ipset内核源码
-### ipset和iptables协作
+
+//L4层源端的信息。
+union nf_conntrack_man_proto
+{
+    /* Add other protocols here. */
+    __be16 all;
+    struct {
+        __be16 port;
+    } tcp;
+    struct {
+        __be16 port;
+    } udp;
+    struct {
+        __be16 id;
+    } icmp;
+    .... //其他协议此处省略
+};
+```
+从上面数据结构定义看，标识一条连接的元组为：
+TCP  源IP，源端口，L3协议类型，目的IP，目的端口号，L4协议类型
+UDP  源IP，源端口，L3协议类型，目的IP，目的端口号，L4协议类型
+ICMP 源IP，L3协议类型，目的IP，id，type，code,，L4协议类型
+
+**conntrack数据结构：**
+一个连接包含正反两个方向的两条报文流.
+```c
+struct nf_conn {
+    //对连接的引用计数
+    struct nf_conntrack ct_general;
+    spinlock_t lock;
+
+    //正向和反向的连接元组信息。
+    struct nf_conntrack_tuple_hash tuplehash[IP_CT_DIR_MAX];
+
+    //该连接的连接状态
+    unsigned long status;
+
+    //如果该连接是期望连接，指向跟其关联的主连接
+    struct nf_conn *master;
+
+    //连接垃圾回收定时器
+    struct timer_list timeout;
+
+    /*存储特定协议的连接跟踪信息*/
+    union nf_conntrack_proto proto;
+
+    /*指向扩展结构，该结构中包含一些基于连接的功能扩展处理函数 */
+    struct nf_ct_ext *ext;
+   //网络命名空间
+    struct net *ct_net;
+};
+
+struct nf_conntrack_tuple_hash {
+    struct hlist_nulls_node hnnode;
+    struct nf_conntrack_tuple tuple;
+};
+```
+每个struct nf_conn实例代表一个连接。每个skb都有一个指针，指向和它相关联的连接。
+```c
+struct sk_buff {
+	struct nf_conntrack *nfct;//指向struct nf_conn实例
+
+	kmemcheck_bitfield_begin(flags1);
+	__u8 local_df:1,
+	cloned:1,
+	ip_summed:2,
+	nohdr:1,
+	nfctinfo:3; //记录报文的连接状态。
+	kmemcheck_bitfield_end(flags1);
+};
+```
+
+**conntrack的存储:**
+*/include/net/netns/conntrack.h*
+每个网络命名空间有如下一个数据结构的实例，来管理和存放生成的连接的一些信息。
+```c
+struct netns_ct 
+{
+    atomic_t count;
+    unsigned int expect_count;
+    unsigned int htable_size; 
+    struct kmem_cache *nf_conntrack_cachep;
+    struct hlist_nulls_head *hash;//存放已经经过确认的连接hash表
+    struct hlist_head *expect_hash;//期望连接hash表
+    struct hlist_nulls_head unconfirmed; //存放没经过确认的连接hash表
+    struct hlist_nulls_head dying;
+    struct ip_conntrack_stat *stat;
+
+    int hash_vmalloc;
+    int expect_vmalloc;
+    char *slabname;
+};
+```
+整体conntrack相关的数据结构如下：
+![](Netfilter介绍及其实现原理/conntrack的存储.jpg)
+
+### conntrack的建立过程
+我们先来看一下iptables定义的连接状态：
+**INVALID** :无效连接，防火墙一般会丢弃该连接
+**NEW**：新建立的，既只是通信双方中只一方发送了报文，还没有得到回应的
+**ESTABLISHED**：已经得到回应的连接。既通信双方都发送过报文的连接
+**RELATED**:关联的连接，既有期望连接关联的连接
+**UNTRACKED**：不进行连接跟踪的连接
+**SNAT**:配置了SNAT的连接
+**DNAT**:配置了DNAT的连接
+
+#### 一般连接建立过程：
+这里我们拿一个udp通信的例子来走一遍连接建立的过程。先不具体到代码的实现。
+
+1、首先，PC和SERVER使用udp报文进行通信。
+![](Netfilter介绍及其实现原理/conntrack一般连接建立1.jpg)
+**PC--------->SERVER**
+
+报文的元组信息如下：
+```
+Sip：1.1.1.6
+Sport:1116
+Dip:1.1.1.5
+Dport:1115
+l4protonum:udp
+L3num:INET
+```
+报文到达防火墙，防火墙的处理如下：
+**防火墙入口处:**
+1. conntrack模块截获报文。
+2. 根据报文的元组信息在防火墙内的连接表中查找是否已经存在建立的连接，因为第一次通信，没有已建立的连接。
+
+建立一个新的连接，连接的正反向元组信息如下图，并把该连接的正向连接A挂到unconfirmed链表上
+![](Netfilter介绍及其实现原理/conntrack一般连接建立2.jpg)
+如上，新建连接后，把该连接和报文进行关联，连接状态是NEW。
+
+**防火墙出口处：**
+拦截报文后，根据报文携带的连接信息，找到连接，把该连接的正向连接A从unconfirmed链表上摘下来，把该连接的正反向连接A和B加入到连接hash表中。并把该连接确认状态置为confirmed状态，即置位status的IPS_CONFIRMED_BIT位。
+![](Netfilter介绍及其实现原理/conntrack一般连接建立3.jpg)
+
+**SERVER----->PC**
+SERVER回应PC的报文元组信息如下：
+```
+Sip：1.1.1.5
+Sport:1115
+Dip:1.1.1.6
+Dport:1116
+l4protonum:udp
+L3num:INET
+```
+
+报文到达防火墙，防火墙的处理如下：
+**防火墙入口处:**
+1. conntrack模块截获报文。
+2. 根据报文的元组信息在防火墙内的连接表中查找是否已经存在建立的连接，可以找到已建立的连接B。
+3. 发现连接B里的dir是reply，表明该连接已经有回应报文了，给连接中的status置位IPS_SEEN_REPLY_BIT，表明该连接已经收到了回应报文。这时把报文的连接状态变为ESTABLISHED
+
+**防火墙出口处：**
+1. 拦截报文后，根据报文携带的连接信息，找到连接，发现该连接确认状态是confirmed的，直接不进行连接处理。
+
+至此，连接建立完成。
+
+后续该连接的正反方向的报文都可以在连接表中查到相应的连接，就可以根据连接进行相应的处理了。
+
+#### 期望连接的建立过程：
+这里就不介绍了，详情可看[原文](http://blog.chinaunix.net/uid-26517122-id-4281305.html)
+
+**奉上原文后续章节：**
+[Netfilter中conntrack 功能扩展机制](http://blog.chinaunix.net/uid-26517122-id-4292718.html)
+[Netfilter中conntrack helper扩展实现](http://blog.chinaunix.net/uid-26517122-id-4292730.html)
+[Netfilter中L3和L4层提供的conntrack处理方法](http://blog.chinaunix.net/uid-26517122-id-4292946.html)
+[Netfilter中conntrack的HOOK点](http://blog.chinaunix.net/uid-26517122-id-4293010.html)
+[Nefilter中IP conntrack核心函数详解](http://blog.chinaunix.net/uid-26517122-id-4293135.html)
+
 
 ## 参考
 [Netfilter](https://zh.wikipedia.org/wiki/Netfilter)
