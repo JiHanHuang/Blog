@@ -83,7 +83,7 @@ iptables -A INPUT -i eth0 -p tcp -s 192.168.100.1 -j REJECT --reject-with tcp-re
 iptables -A INPUT -i eth0 -p tcp -s 192.168.100.0/24 --dport 22 -m state --state NEW,ESTABLISHED -j ACCEPT
 //端口转发
 iptables -t nat -A PREROUTING -p tcp -d 192.168.102.37 --dport 422 -j DNAT --to 192.168.102.37:22
-//允许多端口访问
+//允许多端口访问，也支持端口段：22-443
 iptables -A INPUT -i eth0 -p tcp -m multiport --dports 22,80,443 -m state --state NEW,ESTABLISHED -j ACCEPT
 //使用iptables nth将HTTPS流量负载平衡至两个不同的ip地址。
 iptables -t nat -A PREROUTING -p tcp --dport 8000 -m state --state NEW -m statistic --mode nth --every 2 --packet 0 -j DNAT --to-destination 192.168.17.33:8001

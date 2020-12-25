@@ -60,6 +60,101 @@ git commit -m "new post"
 git push
 ```
 
+### 常用Markdown语法
+主要针对GitHub，参考[官方文档](https://docs.github.com/cn/free-pro-team@latest/github/writing-on-github/basic-writing-and-formatting-syntax)
+*注意语法中的空格*
+
+#### 标题
+```
+# 最大标题
+## 第二大标题
+###### 最小标题
+```
+
+#### 样式文本
+
+|样式	|语法|
+|---|---|
+|粗体|	** ** 或 __ __	|
+|斜体|	* * 或 _ _	||
+|删除线|	~~ ~~		|
+|粗体和嵌入的斜体|	** ** 和 _ _|
+|全部粗体和斜体|	*** ***|
+
+#### 引用文本
+```
+> 引用的文本
+```
+#### 引用代码
+```
+`单行代码引用`
+```
+
+> \```json(代码类型)
+ 多行代码引用
+ \```
+
+#### 链接
+```
+[普通链接](https://jihanhuang.github.io/)
+![图片链接](./技术札记/ssh免密登录原理.png)
+[下载链接](./《mysql必知必会》读书笔记/mysql_scripts.zip)
+[文章导航链接](#已有博客环境迁移)
+```
+
+#### 列表
+```
+1. James Madison
+2. James Monroe
+3. John Quincy Adams
+```
+`*`或`-`都可以
+```
+- George Washington
+- John Adams
+- Thomas Jefferson
+```
+嵌套(子列表的`-`需在父列表的第一个字下)
+```
+1. 第一个列表项
+   -  第一个嵌套列表项
+     - 第二个嵌套列表项
+```
+任务：
+```
+- [x] 完成更改
+- [ ] 推送提交到 GitHub
+- [ ] 打开拉取请求
+- [ ] \(Optional) 规避[]后的()
+```
+
+#### 表格
+```
+|列标题	|列标题|
+|---|---|
+|数据11|	数据21 <br> br表示换行	|
+|数据12|	数据22	|
+```
+
+#### 绘图
+自身不支持绘图，只能自己画好贴上去。
+语法绘图：
+graphviz：较为复杂，特别是时序图，但功能强大。[graphviz在线绘图](https://sketchviz.com/new)，[graphviz dot语法总结](https://onlookerliu.github.io/2017/12/28/dot%E8%AF%AD%E6%B3%95%E6%80%BB%E7%BB%93/#1-%E7%AE%80%E4%BB%8B)
+plantuml：绘图风格单一(个人不觉得丑)，但画时序图很快，模板多，本体使用需要java支持。[plantmul在线绘图](https://www.planttext.com/)：多个模板供选择。能接受画面的，还是推荐使用
+Mermaid：功能简单，绘图较快，美观度还可以，很多Markdown编辑器都支持。[语法](https://mermaid-js.github.io/mermaid/#/)，个人使用感觉功能太少(可能是插件支持不友好)
+
+#### 段落
+通过在文本行之间留一个空白行，可创建新段落。
+
+#### 忽略Markdown格式
+1. 使用代码块
+2. 使用`\`
+
+#### 使用表情符号
+通过键入 `:EMOJICODE:` 可在您的写作中添加表情符号。
+比如`:+1:` :+1: 
+更多表情符号参考[emoji-cheat-sheet](https://www.webfx.com/tools/emoji-cheat-sheet/):sunglasses: 
+
 ### 可能遇到问题
 **发布图片视频音频：**
 图片发布很简单：
