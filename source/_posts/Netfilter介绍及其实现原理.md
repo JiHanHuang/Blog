@@ -14,7 +14,6 @@ tags: [NETFILTER]
 
 <!-- more -->
 
-# Netfilter介绍及其实现原理
 
 [简介](https://www.ibm.com/developerworks/cn/linux/network/s-netip/index.html)
 
