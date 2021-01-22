@@ -294,8 +294,77 @@ GROUP BY子句必须出现在WHERE子句之后，ORDER BY子句之前。
 `SELECT vend_id ,prod_id,prod_price FROM products WHERE prod_price <= 5 OR vend_id IN (101001,1002);`
 `UNION`和`WHERE OR`都能去除重复行，但如果要包含重复行，只有`UNION ALL`可以。`UNION `只能在最后一个`SELECT`子句中包含`ORDER BY`子句
 
-##### 插入数据
+##### 全文本搜索
+需要引擎支持一般MyISAM支持，InnoDB不支持
+需要启动全文本搜索支持(FULLTEXT)，mysql会建立相关索引
+建立全文搜索：`CREATE TABLE productfulltext ( note_id int NOT NULL AUTO_INCREMENT, prod_id char(10) NOT NULL, note_text text  NULL, PRIMARY KEY(note_id), FULLTEXT(note_text)) ENGINE=MyISAM;`
+建议不要在导入数据时使用FULLTEXT，导入后修改表定义FULLTEXT会快点。
+执行全文搜索：`SELECT note_text FROM productnotes WHERE Match(note_text) Against('rabbit');` Match()指定被搜索的列，Against()指定要使用的搜索表达式。
+Match()参数必须和FULLTEXT中定义的相同，如果是多列，必须一致。
+同样效果：`SELECT note_text FROM productnotes WHERE note_text LIKE '%rabbit%';`. 区别在于`LIKE`返回的数据顺序不确定，`Match`有良好的排序。
+使用扩展查询：`SELECT note_text FROM productnotes WHERE Match(note_text) Against('rabbit' WITH QUERY EXPANSION);`
+使用布尔文本搜索(在没有`FULLTEXT`下也能使用，但很缓慢)：``SELECT note_text FROM productnotes WHERE Match(note_text) Against('rabbit' IN BOOLEAN MODE);`
+布尔搜索支持通配：
+|布尔操作符|说  明|
+|--|--|
+|+| 包含，词必须存在|
+|- |排除，词必须不出现|
+|>| 包含，而且增加等级值|
+|< |包含，且减少等级值|
+|()| 把词组成子表达式（允许这些子表达式作为一个组被包含、排除、排列等）|
+|~| 取消一个词的排序值|
+|* |词尾的通配符|
+|""| 定义一个短语（与单个词的列表不一样，它匹配整个短语以便包含或排除这个短语）|
 
+一些特殊说明：
+* 在索引全文本数据时，短词被忽略且从索引中排除。短词定义为那些具有3个或3个以下字符的词（如果需要，这个数目可以更改）。
+* MySQL带有一个内建的非用词（stopword）列表，这些词在索引全文本数据时总是被忽略。如果需要，可以覆盖这个列表（请参阅MySQL文档以了解如何完成此工作）。
+* 许多词出现的频率很高，搜索它们没有用处（返回太多的结果）。因此，MySQL规定了一条50%规则，如果一个词出现在50%以上的行中，则将它作为一个非用词忽略。50%规则不用于IN BOOLEAN MODE。
+* 如果表中的行数少于3行，则全文本搜索不返回结果（因为每个词或者不出现，或者至少出现在50%的行中） 。
+* 忽略词中的单引号。例如，don't索引为dont。
+* 不具有词分隔符（包括日语和汉语）的语言不能恰当地返回全文本搜索结果。如前所述，仅在MyISAM数据库引擎中支持全文本搜索。
+
+
+##### 插入数据
+示例：`INSERT INTO customers VALUES(NULL, 'pep', '100 main', 'Los', 'CA', '90046', 'USA', NULL, NULL);`
+插入数据必须对应着每一个列。
+更安全的示例：`INSERT INTO customers(cust_name, cust_address, cust_city, cust_state, cust_zip, cust_country, cust_contact, cust_email) VALUES(NULL, 'pep', '100 main', 'Los', 'CA', '90046', 'USA', NULL, NULL);` 这种方式，后面的数据只需要和前面列名相对于就行(但是省略掉的列必须可为空或者有默认值)。
+`INSERT LOW_PRIORITY INTO`方式插入可以降低插入的优先级，保证查询的效率。
+插入多个列示例：`INSERT INTO customers(cust_name, cust_address, cust_city, cust_state, cust_zip, cust_country, cust_contact, cust_email) VALUES(NULL, 'pep', '100 main', 'Los', 'CA', '90046', 'USA', NULL, NULL), (NULL, 'pep', '100 main', 'Los', 'CA', '90046', 'USA', NULL, NULL)`
+将数据从一张表导入到另外一张表：`INSERT INTO customers(cust_name, cust_address, cust_city, cust_state, cust_zip, cust_country, cust_contact, cust_email) SELECT cust_name, cust_address, cust_city, cust_state, cust_zip, cust_country, cust_contact, cust_email FROM custnew;`
+
+##### 更新数据
+示例：`UPDATE customers SET cust_email = 'elmer@fudd.com' WHERE cust_id = 10005;`
+更新多列：`UPDATE customers SET cust_name = 'foo', cust_email = 'elmer@fudd.com' WHERE cust_id = 10005;` 更新多行默认情况下其中一个更新出错，所有更新数据都会恢复。如果需要发生错误也要继续更新，可使用关键字`IGNORE`
+删除相应值，可以将其`UPDATE`为`NULL`（前提允许为`NULL`）
+**如果忽略`WHERE`就会更新所有行**
+
+##### 删除数据
+删除行：`DELETE FROM customers WHERE cust_id = 10006;`
+**同样，如果忽略`WHERE`就会删除所有行**
+如果需要删除表中所有行，使用`TRUNCATE TABLE`更佳
+最好使用强制实施引用完整性的数据库，这样MySQL将不允许删除具有与其他表相关联的数据的行。
+
+##### 创建表
+示例：
+```sql
+CREATE TABLE customers
+(
+  cust_id      int       NOT NULL AUTO_INCREMENT,
+  cust_name    char(50)  NOT NULL ,
+  cust_address char(50)  NULL ,
+  cust_city    char(50)  NULL ,
+  cust_state   char(5)   NULL ,
+  cust_zip     char(10)  NULL ,
+  cust_country char(50)  NULL ,
+  cust_contact char(50)  NULL ,
+  cust_email   char(255) NULL ,
+  PRIMARY KEY (cust_id)
+) ENGINE=InnoDB;
+```
+创建表时需要改表名不存在，不然会报错。
+创建表的时候，`NULL`和空串不是一回事。`NULL`代表没有值，空串代表有值且值为`''`
+创建主键：`PRIMARY KEY (vend_id, ...)`主键支持一个或多个，但行值必须唯一。主键不能配置为`NULL`值
 
 #### 其他：
 服务器状态信息：`SHOW status;`
