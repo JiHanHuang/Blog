@@ -111,8 +111,9 @@ mysql在排序时认为A和a是一样的。
 范围检查：`SELECT prod_price, prod_name FROM products WHERE prod_price BETWEEN 5 AND 10;`
 空值检查：`SELECT cust_id FROM customers WHERE cust_email IS NULL;`
 WHERE操作符：
+
 | 操作符 | 说明|
-|--|--|
+|---|---|
 |= |等于|
 |<> |不等于|
 |!=| 不等于|
@@ -127,8 +128,9 @@ WHERE操作符：
 逻辑过滤：`SELECT prod_price, prod_name FROM products WHERE vend_id = 1002 OR vend_id=1003;`
 逻辑过滤：`SELECT prod_price, prod_name FROM products WHERE vend_id IN (1002,1003);`（效果同上的OR操作）
 WHERE逻辑操作符：
+
 | 操作符 | 说明|
-|--|--|
+|---|---|
 |AND|同时满足|
 |OR|满足其一|
 |IN|满足其一|
@@ -137,8 +139,9 @@ WHERE逻辑操作符：
 
 **通配符过滤**：
 `SELECT prod_id, prod_name FROM products WHERE prod_name LIKE 'jet%'`（`%`类似正则里的`*`）
+
 | 通配符 | 说明|
-|--|--|
+|---|---|
 |%|0~n个任意字符|
 |_|1个任意字符|
 
@@ -146,8 +149,9 @@ WHERE逻辑操作符：
 `SELECT prod_id, prod_name FROM products WHERE prod_name REGEXP '1000';`
 
 **字符类**
+
 |类| 说明|
-|--|--|
+|---|---|
 |[:alnum:]| 任意字母和数字（同[a-zA-Z0-9]）|
 |[:alpha:]| 任意字符（同[a-zA-Z]）|
 |[:blank:]| 空格和制表（同[\\t]）|
@@ -161,8 +165,9 @@ WHERE逻辑操作符：
 |[:xdigit:] |任意十六进制数字（同[a-fA-F0-9]）|
 
 **重复元字符元**
+
 | 字|  符说  明|
-|--|--|
+|---|---|
 |* |0个或多个匹配|
 |+ |1个或多个匹配（等于{1,}）|
 |? |0个或1个匹配（等于{0,1}）|
@@ -171,8 +176,9 @@ WHERE逻辑操作符：
 |{n,m} |匹配数目的范围（m不超过255）|
 
 **定位元字符元**
+
 | 字|  符说  明|
-|--|--|
+|---|---|
 |^ |文本的开始|
 |$ |文本的结尾|
 | \[[:<:]] |词的开始|
@@ -195,8 +201,9 @@ SQL支持的一些函数：
 4. 返回DBMS正使用的特殊信息
 
 **常用的文本处理函数**
+
 | 函  数 |  符说  明|
-|--|--|
+|---|---|
 |Left() |返回串左边的字符|
 |Length()| 返回串的长度|
 |Locate()| 找出串的一个子串|
@@ -210,8 +217,9 @@ SQL支持的一些函数：
 示例：`SELECT cust_name, cust_contact FROM customers WHERE Soundex(cust_contact) = Soundex('Y Lie');`
 
 **常用日期和时间处理函数**
+
 | 函  数 |  符说  明|
-|--|--|
+|---|---|
 |AddDate() |增加一个日期（天、周等）|
 |AddTime() |增加一个时间（时、分等）|
 |CurDate() |返回当前日期|
@@ -232,8 +240,9 @@ SQL支持的一些函数：
 示例：`SELECT * FROM orders WHERE Date(order_date) BETWEEN '2005-09-01' AND '2005-09-30';`
 
 **常用数值处理函数**
+
 | 函  数 |  符说  明|
-|--|--|
+|---|---|
 |Abs() |返回一个数的绝对值|
 |Cos() |返回一个角度的余弦|
 |Exp() |返回一个数的指数值|
@@ -245,8 +254,9 @@ SQL支持的一些函数：
 |Tan() |返回一个角度的正切|
 
 **SQL聚集函数**针对行组的操作函数
+
 | 函  数 |  符说  明|
-|--|--|
+|---|---|
 |AVG() |返回某列的平均值|
 |COUNT() |返回某列的行数|
 |MAX() |返回某列的最大值|
@@ -265,7 +275,7 @@ GROUP BY子句必须出现在WHERE子句之后，ORDER BY子句之前。
 ##### SELECT子句顺序
 
 |子  句|说  明|是否必须使用|
-|--|--|--|
+|---|---|---|
 |SELECT| 要返回的列或表达式|是|
 |FROM |从中检索数据的表|仅在从表选择数据时使用|
 |WHERE |行级过滤|否|
@@ -305,8 +315,9 @@ Match()参数必须和FULLTEXT中定义的相同，如果是多列，必须一�
 使用扩展查询：`SELECT note_text FROM productnotes WHERE Match(note_text) Against('rabbit' WITH QUERY EXPANSION);`
 使用布尔文本搜索(在没有`FULLTEXT`下也能使用，但很缓慢)：``SELECT note_text FROM productnotes WHERE Match(note_text) Against('rabbit' IN BOOLEAN MODE);`
 布尔搜索支持通配：
+
 |布尔操作符|说  明|
-|--|--|
+|---|---|
 |+| 包含，词必须存在|
 |- |排除，词必须不出现|
 |>| 包含，而且增加等级值|

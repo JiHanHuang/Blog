@@ -49,6 +49,7 @@ hexo new post "article title"
 hexo g  
 # 本地预览博客
 hexo s  
+hexo s -i 0.0.0.0 -p 8080 #指定监听地址端口
 # 上传网页文件到github
 hexo d  
 ```
@@ -90,9 +91,19 @@ git push
 `单行代码引用`
 ```
 
-> \```json(代码类型)
+````
+```json(代码类型)
  多行代码引用
- \```
+```
+````
+如果想在代码块中显示\`\`\`, 只需要外层的\` 比内层的多即可：
+`````
+```` 代码块标识
+```json
+显示的代码
+```
+````
+`````
 
 #### 链接
 ```
@@ -137,7 +148,37 @@ git push
 ```
 
 #### 绘图
-自身支持绘图不友好，最好自己画好贴上去。
+hexo自身都不支持Markdown标准绘图和Mermaid。需要进行配置：
+执行以下命令：
+```shell
+npm install --save hexo-filter-mermaid-diagrams
+npm install --save hexo-filter-sequence
+npm install --save hexo-filter-flowchart
+```
+Mermaid配置可以阅读：[Hexo中引入Mermaid流程图](https://tyloafer.github.io/posts/7790/)，引用部分如下：
+
+> Mermaid还需要进行配置(根目录下_config.yml)，增加如下内容：
+> ```
+> # mermaid chart
+> mermaid: ## mermaid url https://github.com/knsv/mermaid
+>   enable: true  # default true
+>   version: "7.1.2" # default v7.1.2
+>   options:  # find more api options from https://github.com/knsv/mermaid/blob/master/src/mermaidAPI.js
+>     #startOnload: true  // default true
+> ```
+> 以及修改js，我这里使用的是`next`主题。在文件`themes/next/layout/_partials/footer.swig`后>加上：
+> ```
+> {% if (theme.mermaid.enable)  %}
+>   <script src='https://unpkg.com/mermaid@{{ theme.mermaid.version }}/dist/mermaid.min.js'></script>
+>   <script>
+>     if (window.mermaid) {
+>       mermaid.initialize({theme: 'forest'});
+>     }
+>   </script>
+> {% endif %}
+> ```
+
+
 语法绘图：
 graphviz：较为复杂，特别是时序图，但功能强大。[graphviz在线绘图](https://sketchviz.com/new)，[graphviz dot语法总结](https://onlookerliu.github.io/2017/12/28/dot%E8%AF%AD%E6%B3%95%E6%80%BB%E7%BB%93/#1-%E7%AE%80%E4%BB%8B)
 plantuml：绘图风格单一(个人不觉得丑)，但画时序图很快，模板多，本体使用需要java支持。[plantmul在线绘图](https://www.planttext.com/)：多个模板供选择。能接受画面的，还是推荐使用
@@ -146,7 +187,9 @@ Mermaid：功能简单，绘图较快，美观度还可以，很多Markdown编�
 *[来源](https://www.runoob.com/markdown/md-advance.html)*
 **Markdown标准支持：**
 流程图：
->\```flow
+
+`````
+```flow
 st=>start: 开始框
 op=>operation: 处理框
 cond=>condition: 判断框(是或否?)
@@ -156,7 +199,8 @@ e=>end: 结束框
 st->op->cond
 cond(yes)->io->e
 cond(no)->sub1(right)->op
->\```
+```
+`````
 
 效果：
 ```flow
@@ -172,7 +216,8 @@ cond(no)->sub1(right)->op
 ```
 
 流程图(横向)：
->\```flow
+````
+```flow
 st=>start: 开始框
 op=>operation: 处理框
 cond=>condition: 判断框(是或否?)
@@ -182,7 +227,8 @@ e=>end: 结束框
 st(right)->op(right)->cond
 cond(yes)->io(bottom)->e
 cond(no)->sub1(right)->op
->\```
+```
+````
 
 效果：
 ```flow
@@ -197,13 +243,15 @@ cond(yes)->io(bottom)->e
 cond(no)->sub1(right)->op
 ```
 UML样例：
->\```sequence
+````
+```sequence
 对象A->对象B: 对象B你好吗?（请求）
 Note right of 对象B: 对象B的描述
 Note left of 对象A: 对象A的描述(提示)
 对象B-->对象A: 我很好(响应)
 对象A->对象B: 你真的好吗？
->\```
+```
+````
 
 效果：
 ```sequence
@@ -214,7 +262,8 @@ Note left of 对象A: 对象A的描述(提示)
 对象A->对象B: 你真的好吗？
 ```
 UML复杂样例：
->\```sequence
+````
+```sequence
 Title: 标题：复杂使用
 对象A->对象B: 对象B你好吗?（请求）
 Note right of 对象B: 对象B的描述
@@ -226,7 +275,8 @@ Note left of 对象A: 对象A的描述(提示)
 Note over 小三,对象B: 我们是朋友
 participant C
 Note right of C: 没人陪我玩
->\```
+```
+````
 
 效果：
 ```sequence
@@ -246,14 +296,16 @@ Note right of C: 没人陪我玩
 **Mermaid：**
 [语法](https://mermaid-js.github.io/mermaid/#/)
 流程图：
->\```mermaid
+````
+```mermaid
 graph TD
 A[方形] --> B(圆角)
     B --> C{条件a}
     C --> |a=1| D[结果1]
     C --> |a=2| E[结果2]
     F[竖向流程图]
->\```
+```
+````
 
 效果：
 ```mermaid
@@ -265,7 +317,8 @@ A[方形] --> B(圆角)
     F[竖向流程图]
 ```
 UML样例：
->\```mermaid
+````
+```mermaid
   sequenceDiagram
     participant 张三
     participant 李四
@@ -277,7 +330,8 @@ UML样例：
     李四-->>张三: 很好!
     王五->李四: 你怎么样?
     李四-->王五: 很好!
->\```
+```
+````
 
 效果：
 ```mermaid
@@ -295,7 +349,8 @@ UML样例：
 ```
 
 甘特图：
->\```mermaid
+````
+```mermaid
       gantt
         dateFormat  YYYY-MM-DD
         title 软件开发甘特图
@@ -314,7 +369,8 @@ UML样例：
         功能测试                              :active, a1, after des3, 3d
         压力测试                               :after a1  , 20h
         测试报告                               : 48h
->\```
+```
+````
 
 效果：
 ```mermaid
@@ -349,8 +405,24 @@ UML样例：
 
 #### 使用表情符号
 通过键入 `:EMOJICODE:` 可在您的写作中添加表情符号。
-比如`:+1:` :+1: 
-更多表情符号参考[emoji-cheat-sheet](https://www.webfx.com/tools/emoji-cheat-sheet/):sunglasses: 
+比如`:+1:` :+1:  
+hexo默认是不支持表情符号的，因此我在[这儿](https://novnan.github.io/Hexo/emojis-for-hexo-next/)找到了解决方案：
+> 安装
+> ```
+> npm install hexo-filter-github-emojis --save
+> ```
+> 打开配置文件(根目录下的`_config.yml`文件)，并增加：
+> ```
+> githubEmojis:
+>   enable: true
+>   className: github-emoji
+>   unicode: false
+>   styles:
+>   localEmojis:
+> ```
+> GitHubEmojis更多配置参考[文档](https://github.com/crimx/hexo-filter-github-emojis)
+
+更多表情符号参考[emoji-cheat-sheet](https://www.webfx.com/tools/emoji-cheat-sheet/) :sunglasses: 
 
 ### 可能遇到问题
 **发布图片视频音频：**
