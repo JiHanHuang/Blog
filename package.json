@@ -10,7 +10,6 @@
     "hexo-asset-image": "git+https://github.com/CodeFalling/hexo-asset-image.git",
     "hexo-deployer-git": "^1.0.0",
     "hexo-filter-flowchart": "^1.0.4",
-    "hexo-filter-github-emojis": "^3.0.4",
     "hexo-filter-mermaid-diagrams": "^1.0.5",
     "hexo-filter-sequence": "^1.0.3",
     "hexo-generator-archive": "^0.1.5",
@@ -21,13 +20,14 @@
     "hexo-generator-tag": "^0.2.0",
     "hexo-helper-live2d": "^3.1.1",
     "hexo-renderer-ejs": "^0.3.1",
-    "hexo-renderer-marked": "^3.3.0",
+    "hexo-renderer-markdown-it": "^5.0.0",
     "hexo-renderer-stylus": "^0.3.3",
     "hexo-server": "^0.3.3",
     "hexo-symbols-count-time": "^0.6.0",
     "hexo-wordcount": "^6.0.1",
     "live2d-widget-model-hijiki": "^1.0.5",
     "live2d-widget-model-koharu": "^1.0.5",
-    "live2d-widget-model-tororo": "^1.0.5"
+    "live2d-widget-model-tororo": "^1.0.5",
+    "markdown-it-emoji": "^2.0.0"
   }
 }

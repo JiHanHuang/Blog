@@ -189,7 +189,7 @@ Mermaid：功能简单，绘图较快，美观度还可以，很多Markdown编�
 流程图：
 
 `````
-```flow
+``` <添加标签：flow>
 st=>start: 开始框
 op=>operation: 处理框
 cond=>condition: 判断框(是或否?)
@@ -217,7 +217,7 @@ cond(no)->sub1(right)->op
 
 流程图(横向)：
 ````
-```flow
+```<添加标签：flow>
 st=>start: 开始框
 op=>operation: 处理框
 cond=>condition: 判断框(是或否?)
@@ -244,7 +244,7 @@ cond(no)->sub1(right)->op
 ```
 UML样例：
 ````
-```sequence
+```<添加标签：sequence>
 对象A->对象B: 对象B你好吗?（请求）
 Note right of 对象B: 对象B的描述
 Note left of 对象A: 对象A的描述(提示)
@@ -263,7 +263,7 @@ Note left of 对象A: 对象A的描述(提示)
 ```
 UML复杂样例：
 ````
-```sequence
+```<添加标签：sequence>
 Title: 标题：复杂使用
 对象A->对象B: 对象B你好吗?（请求）
 Note right of 对象B: 对象B的描述
@@ -297,7 +297,7 @@ Note right of C: 没人陪我玩
 [语法](https://mermaid-js.github.io/mermaid/#/)
 流程图：
 ````
-```mermaid
+```<添加标签：mermaid>
 graph TD
 A[方形] --> B(圆角)
     B --> C{条件a}
@@ -318,7 +318,7 @@ A[方形] --> B(圆角)
 ```
 UML样例：
 ````
-```mermaid
+```<添加标签：mermaid>
   sequenceDiagram
     participant 张三
     participant 李四
@@ -349,8 +349,8 @@ UML样例：
 ```
 
 甘特图：
-````
-```mermaid
+`````
+````<添加标签：mermaid>
       gantt
         dateFormat  YYYY-MM-DD
         title 软件开发甘特图
@@ -369,8 +369,8 @@ UML样例：
         功能测试                              :active, a1, after des3, 3d
         压力测试                               :after a1  , 20h
         测试报告                               : 48h
-```
 ````
+`````
 
 效果：
 ```mermaid
@@ -395,7 +395,6 @@ UML样例：
 ```
 
 
-
 #### 段落
 通过在文本行之间留一个空白行，可创建新段落。
 
@@ -406,21 +405,7 @@ UML样例：
 #### 使用表情符号
 通过键入 `:EMOJICODE:` 可在您的写作中添加表情符号。
 比如`:+1:` :+1:  
-hexo默认是不支持表情符号的，因此我在[这儿](https://novnan.github.io/Hexo/emojis-for-hexo-next/)找到了解决方案：
-> 安装
-> ```
-> npm install hexo-filter-github-emojis --save
-> ```
-> 打开配置文件(根目录下的`_config.yml`文件)，并增加：
-> ```
-> githubEmojis:
->   enable: true
->   className: github-emoji
->   unicode: false
->   styles:
->   localEmojis:
-> ```
-> GitHubEmojis更多配置参考[文档](https://github.com/crimx/hexo-filter-github-emojis)
+hexo默认是不支持表情符号的，因此我把hexo的Markdown引擎改为了`hexo-renderer-markdown-it`来支持表情。听说这个渲染更快，还支持插件（我尝试增加了几个插件markdown-it-mermaid，markdown-it-graphviz之类的，支持的都不好）。[详情请参考](http://baishusama.github.io/2016/12/24/hexo-render-markdown-it-and-its-plugins/)
 
 更多表情符号参考[emoji-cheat-sheet](https://www.webfx.com/tools/emoji-cheat-sheet/) :sunglasses: 
 

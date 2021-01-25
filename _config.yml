@@ -77,33 +77,27 @@ mermaid: ## mermaid url https://github.com/knsv/mermaid
   options:  # find more api options from https://github.com/knsv/mermaid/blob/master/src/mermaidAPI.js
     #startOnload: true  // default true
 
-githubEmojis:
-  enable: true
-  className: github-emoji
-  unicode: false
-  styles:
-  localEmojis:
-
 # Markdown-it config
-#markdown:
-#  render:
-#    html: true
-#    xhtmlOut: false
-#    breaks: true
-#    linkify: true
-#    typographer: true
-#    quotes: '“”‘’'
-#  plugins:
-#    - markdown-it-abbr
-#    - markdown-it-footnote
-#    - markdown-it-ins
-#    - markdown-it-sub
-#    - markdown-it-sup
-#  anchors:
-#    level: 2
-#    collisionSuffix: 'v'
-#    permalink: true
-#    permalinkClass: header-anchor
-#    permalinkSymbol: ¶
+markdown:
+  render:
+    html: true # 是否对HTML标签进行解析，false时HTML将按照原样输出
+    xhtmlOut: false # 是否需要满足严格的XHTML格式，换行为<br />
+    breaks: true
+    linkify: true
+    typographer: true
+    quotes: '“”‘’'
+  plugins:
+    - markdown-it-abbr
+    - markdown-it-footnote
+    - markdown-it-ins
+    - markdown-it-sub
+    - markdown-it-sup
+    - markdown-it-emoji  # add emoji
+  anchors:
+    level: 2
+    collisionSuffix: 'v'
+    permalink: true
+    permalinkClass: header-anchor
+    permalinkSymbol: ''
 
 
