@@ -185,7 +185,7 @@ plantuml：绘图风格单一(个人不觉得丑)，但画时序图很快，模�
 Mermaid：功能简单，绘图较快，美观度还可以，很多Markdown编辑器都支持。[语法](https://mermaid-js.github.io/mermaid/#/)，个人使用感觉功能太少(可能是插件支持不友好)
 ##### 示例
 *[来源](https://www.runoob.com/markdown/md-advance.html)*
-**Markdown标准支持：**
+**Markdown标准支持（不推荐使用）：**
 流程图：
 
 `````
